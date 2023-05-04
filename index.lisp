@@ -18,7 +18,7 @@ If INCLUDE-SUBDIRECTORIES is T, then work recursively."
     (dolist (subdir (uiop/filesystem:subdirectories path))
       (find-files-do subdir pattern function include-subdirectories))))
 
-(defun index-quicklisp-systems (&key start-after-system)
+(defun index-quicklisp-systems (&key start-after-system ignore)
   (let ((start (not start-after-system)))
     (find-files-do
      (merge-pathnames #p"upstream-cache/" *quicklisp-controller-directory*)
@@ -29,7 +29,8 @@ If INCLUDE-SUBDIRECTORIES is T, then work recursively."
 	 (when (and (not start) start-after-system)
 	   (when (string= start-after-system system-name)
 	     (setq start t)))
-	 (when start
+	 (when (and start
+		    (not (member system-name ignore :test #'string=)))
 	   (with-simple-restart (skip "Skip to next system")
 	     (uiop:run-program
 	      (format nil "sbcl --load 'system-parser.lisp' --eval '(system-parser:index-system \"~a\")' --quit" system-name)
