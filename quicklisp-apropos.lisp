@@ -76,46 +76,54 @@
     (print-result (car result))
     (format t "--------------------------------------------------------------------------------~%")))
 
-(defun quicklisp-apropos (query &key (count *results-count*))
-  (ensure-index)
-  (print-results (query-index query :count count)))
+(defun maybe-print-results (results print-p)
+  (if print-p
+      (print-results results)
+      results))
 
-(defun quicklisp-apropos-system (query &key (count *results-count*))
+(defun quicklisp-apropos (query &key (count *results-count*)
+				  (print-results t))
   (ensure-index)
-  (print-results (query-index (format nil "+type:system, name: '~a', doc:'~a'"
+  (maybe-print-results (query-index query :count count) print-results))
+
+(defun quicklisp-apropos-system (query &key (count *results-count*) (print-results t))
+  (ensure-index)
+  (maybe-print-results (query-index (format nil "+type:system, name: '~a', doc:'~a'"
 				      query query)
-			      :count count)))
+				    :count count)
+		       print-results))
 
-(defun quicklisp-apropos-package (query &key (count *results-count*))
+(defun quicklisp-apropos-package (query &key (count *results-count*) (print-results t))
   (ensure-index)
-  (print-results (query-index (format nil "+type:package, name:'~a', doc:'~a'" query query) :count count)))
+  (maybe-print-results (query-index (format nil "+type:package, name:'~a', doc:'~a'" query query) :count count)
+		       print-results))
 
-(defun quicklisp-apropos-name (query &key (count *results-count*))
+(defun quicklisp-apropos-name (query &key (count *results-count*) (print-results t))
   (ensure-index)
-  (print-results (query-index (format nil "+name:'~a'" query) :count count)))
+  (maybe-print-results (query-index (format nil "+name:'~a'" query) :count count) print-results))
 
-(defun quicklisp-apropos-doc (query &key (count *results-count*))
+(defun quicklisp-apropos-doc (query &key (count *results-count*) (print-results t))
   (ensure-index)
-  (print-results (query-index (format nil "+doc:'~a'" query) :count count)))
+  (maybe-print-results (query-index (format nil "+doc:'~a'" query) :count count) print-results))
 
-(defun quicklisp-apropos-variable (query &key (count *results-count*))
+(defun quicklisp-apropos-variable (query &key (count *results-count*) (print-results t))
   (ensure-index)
-  (print-results (query-index (format nil "+type:variable, name:'~a', doc:'~a'" query query) :count count)))
+  (maybe-print-results (query-index (format nil "+type:variable, name:'~a', doc:'~a'" query query) :count count) print-results))
 
-(defun quicklisp-apropos-class (query &key (count *results-count*))
+(defun quicklisp-apropos-class (query &key (count *results-count*) (print-results t))
   (ensure-index)
-  (print-results (query-index (format nil "+type:class, name:'~a',doc:'~a'" query query) :count count)))
+  (maybe-print-results (query-index (format nil "+type:class, name:'~a',doc:'~a'" query query) :count count) print-results))
 
-(defun quicklisp-apropos-function (query &key (count *results-count*))
+(defun quicklisp-apropos-function (query &key (count *results-count*) (print-results t))
   (ensure-index)
-  (print-results (query-index (format nil "+type:function, name:'~a', doc:'~a'" query query) :count count)))
+  (maybe-print-results (query-index (format nil "+type:function, name:'~a', doc:'~a'" query query) :count count) print-results))
 
-(defun quicklisp-apropos-macro (query &key (count *results-count*))
+(defun quicklisp-apropos-macro (query &key (count *results-count*) (print-results t))
   (ensure-index)
-  (print-results (query-index (format nil "+type:'macro', name:'~a', doc:'~a'" query query) :count count)))
+  (maybe-print-results (query-index (format nil "+type:'macro', name:'~a', doc:'~a'" query query) :count count) print-results))
 
-(defun quicklisp-apropos-generic-function (query &key (count *results-count*))
+(defun quicklisp-apropos-generic-function (query &key (count *results-count*) (print-results t))
   (ensure-index)
-  (print-results (query-index (format nil "+type:'generic-function', name:'~a', doc:'~a'" query query) :count count)))
+  (maybe-print-results (query-index (format nil "+type:'generic-function', name:'~a', doc:'~a'" query query) :count count) print-results))
 
 (in-package :quicklisp-apropos)
