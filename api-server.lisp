@@ -3,10 +3,10 @@
 (require :string-case)
 (require :cl-json)
 
-(defpackage :quicklisp-docs-index-api-server
+(defpackage :quicklisp-apropos-server
   (:use :cl))
 
-(in-package :quicklisp-docs-index-api-server)
+(in-package :quicklisp-apropos-server)
 
 (defparameter *index* (make-instance 'montezuma:index
 				     :path "/home/marian/src/quicklisp-docs-index"

@@ -1,10 +1,10 @@
 (require :drakma)
 (require :cl-json)
 
-(defpackage :quicklisp-docs-index-api-client
+(defpackage :quicklisp-apropos-client
   (:use :cl))
 
-(in-package :quicklisp-docs-index-api-client)
+(in-package :quicklisp-apropos-client)
 
 (defvar *index-url*)
 
