@@ -77,6 +77,7 @@
 
 (defun index-system (system)
   (let ((index (docparser:parse system)))
+    (montezuma:add-document-to-index *index* (make-system-document system))
     (docparser:do-packages (package index)
       (let ((doc (make-document package system)))
 	(montezuma:add-document-to-index *index* doc))
