@@ -8,7 +8,9 @@
 
 (in-package :quicklisp-docs-index-api-server)
 
-(defparameter *index* (make-instance 'montezuma:index :path "/home/marian/src/quicklisp-docs-index"))
+(defparameter *index* (make-instance 'montezuma:index
+				     :path "/home/marian/src/quicklisp-docs-index"
+				     ))
 
 (defun parse-document (doc)
   (flet ((docvalue (field)
@@ -30,7 +32,8 @@
   (let (found)
     (montezuma:search-each *index* query
 			   #'(lambda (doc score)
-                               (push (cons (parse-document (montezuma:get-document *index* doc)) score) found)))
+                               (push (cons (parse-document (montezuma:get-document *index* doc)) score) found))
+			   '(:num-docs 50))
     (nreverse found)))
 
 (hunchentoot:define-easy-handler (query-handler :uri "/")
