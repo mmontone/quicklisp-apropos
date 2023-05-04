@@ -14,7 +14,10 @@
 
 (defun parse-document (doc)
   (flet ((docvalue (field)
-	   (montezuma:document-value doc field)))
+	   (let ((val (montezuma:document-value doc field)))
+	     ;; NILs in Montezuma are stored as a string "NIL"
+	     (when (not (string= val "NIL"))
+	       val))))
     (string-case:string-case ((docvalue "type"))
       ("package"
        (list (cons "type" "package")
