@@ -47,6 +47,34 @@
 	   (cons "package" (package-name (symbol-package (docparser:node-name node))))
 	   (cons "system" (princ-to-string system))))))
 
+;; (asdf/find-system:load-asd file)
+
+(defun read-system-doc (system-designator)
+  (let ((readme-files (concatenate 'list
+				   (uiop/filesystem:directory-files 
+				    (asdf:system-source-directory system-designator)
+				    "README*")
+				   (uiop/filesystem:directory-files 
+				    (asdf:system-source-directory system-designator)
+				    "README.*")))
+	(system (asdf:find-system system-designator)))
+    ;; Concatenate all documentation we found
+    (with-output-to-string (s)
+      (when (asdf:system-description system)
+	(write-string (asdf:system-description system) s)
+	(terpri s))
+      (when (asdf:system-long-description system)
+	(write-string (asdf:system-long-description system) s)
+	(terpri s))
+      (dolist (readme-file readme-files)
+	(write-string (alexandria:read-file-into-string readme-file) s)
+	(terpri s)))))
+
+(defun make-system-document (system)
+  (list (cons "type" "system")
+	(cons "name" (princ-to-string system))
+	(cons "doc" (read-system-doc system))))
+
 (defun index-system (system)
   (let ((index (docparser:parse system)))
     (docparser:do-packages (package index)
