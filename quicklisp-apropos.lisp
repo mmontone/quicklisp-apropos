@@ -82,11 +82,13 @@
 
 (defun quicklisp-apropos-system (query &key (count *results-count*))
   (ensure-index)
-  (print-results (query-index (format nil "+system:'~a'" query) :count count)))
+  (print-results (query-index (format nil "+type:system, name: '~a', doc:'~a'"
+				      query query)
+			      :count count)))
 
 (defun quicklisp-apropos-package (query &key (count *results-count*))
   (ensure-index)
-  (print-results (query-index (format nil "+package:'~a'" query) :count count)))
+  (print-results (query-index (format nil "+type:package, name:'~a', doc:'~a'" query query) :count count)))
 
 (defun quicklisp-apropos-name (query &key (count *results-count*))
   (ensure-index)
