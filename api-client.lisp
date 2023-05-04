@@ -26,7 +26,7 @@
 	  (alexandria:assoc-value result :name)
 	  (alexandria:assoc-value result :system))
   (when (alexandria:assoc-value result :doc)
-    (format t "~a~%" (alexandria:assoc-value result :doc))))
+    (format t "~%~a~%" (alexandria:assoc-value result :doc))))
 
 (defun print-results (results)
   (format t "~a results:~%~%" (length results))
