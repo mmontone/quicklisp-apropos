@@ -1,0 +1,6 @@
+(load "~/src/lisp/quicklisp-controller/quicklisp-controller.asd")
+(load "~/src/lisp/githappy/githappy.asd")
+(load "~/src/lisp/project-info/project-info.asd")
+(asdf:operate 'asdf:load-op :quicklisp-controller)
+(quicklisp-controller:setup-directories "~/src/lisp/quicklisp-projects/")
+(QUICKLISP-CONTROLLER::UPDATE-WHAT-YOU-CAN)
