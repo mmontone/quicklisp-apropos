@@ -1,4 +1,6 @@
-;; Copyright (C) 2021 Mariano Montone
+;;; quicklisp-apropos.el --- Commands for quicklisp-apropos      -*- lexical-binding: t -*-
+
+;; Copyright (C) 2023 Mariano Montone
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -29,19 +31,11 @@
 (defcustom quicklisp-apropos-max-results 50
   "Maximum number of results to be returned by quicklisp-apropos.")
 
-;; (defun quicksearch--follow-link (button)
-;;   "Follow the URL specified by BUTTON."
-;;   (browse-url (button-get button 'url)))
+(defcustom quicklisp-apropos-query-results-function
+  'quicklisp-apropos--query-results
+  "Internal function to use for fetching and showing quicklisp-apropos results.")
 
-;; (defun quicksearch--button (text type &rest properties)
-;;   ;; `make-text-button' mutates our string to add properties. Copy
-;;   ;; TEXT to prevent mutating our arguments, and to support 'pure'
-;;   ;; strings, which are read-only.
-;;   (setq text (substring-no-properties text))
-;;   (apply #'make-text-button
-;;          text nil
-;;          :type type
-;;          properties))
+
 
 ;; (define-button-type 'quicksearch-link-button
 ;;   'action #'quicksearch--follow-link
@@ -68,22 +62,71 @@
 ;;         after)))
 ;;   string))
 
-(defun quicklisp-apropos (query)
-  (interactive "sQuicklisp apropos: ")
-  (let* ((results
-	  (slime-eval `(cl:with-output-to-string
-			(cl:*standard-output*)
-			(quicklisp-apropos:quicklisp-apropos ,query :count ,quicklisp-apropos-max-results))))
-	 (buffer-name (format "*quicksearch: %s*" query))
-	 (buffer (get-buffer-create buffer-name)))
+(defun quicklisp-apropos--open-buffer-with-results (buffer-name results)
+  (let ((buffer (get-buffer-create buffer-name)))
     (with-current-buffer buffer
-      (insert (format "Quicklisp apropos: %s\n\n" query))
+      (dolist (result results)
+        (let ((name (cdr (assoc-string "name" result)))
+              (type (cdr (assoc-string "type" result)))
+              (doc (cdr (assoc-string "doc" result)))
+              (system (cdr (assoc-string "system" result))))
+          (insert type)
+          (insert " ")
+          (insert-button name
+                         'follow-link t
+                         'help-echo "Load system and edit definition."
+                         'action (lambda (_)
+                                   (when (yes-or-no-p (format "Load %s system?" system))
+                                     (slime-eval `(ql:quickload ,system))
+                                     (slime-edit-definition name))))
+          (insert " in system ")
+          (insert-button system
+                         'follow-link t
+                         'help-echo "Load system"
+                         'action (lambda (_)
+                                   (when (yes-or-no-p (format "Load %s system?" system))
+                                     (slime-eval `(ql:quickload ,system)))))
+          (newline 2)
+          (insert doc)
+          (newline)
+          (insert "--------------------------------------------------------------------------------")
+          (newline)))
+      (local-set-key "q" 'kill-buffer)
+      (setq buffer-read-only t)
+      (buffer-disable-undo)
+      (goto-char 0)
+      (pop-to-buffer buffer))))
+
+(defun quicklisp-apropos--open-buffer-with-printed-results (buffer-name results)
+  (let ((buffer (get-buffer-create buffer-name)))
+    (with-current-buffer buffer
       (insert results)
       (local-set-key "q" 'kill-buffer)
       (setq buffer-read-only t)
       (buffer-disable-undo)
       (goto-char 0)
       (pop-to-buffer buffer))))
+
+(defun quicklisp-apropos--query-printed-results (query)
+  (let* ((results
+          (slime-eval `(cl:with-output-to-string
+                        (cl:*standard-output*)
+                        (quicklisp-apropos:quicklisp-apropos ,query :count ,quicklisp-apropos-max-results))))
+         (buffer-name (format "*quicksearch: %s*" query)))
+    (quicklisp-apropos--open-buffer-with-printed-results buffer-name results)))
+
+(defun quicklisp-apropos--query-results (query)
+  (let* ((results
+          (slime-eval `(quicklisp-apropos:quicklisp-apropos ,query :count ,quicklisp-apropos-max-results :print-results nil)))
+         (buffer-name (format "*quicksearch: %s*" query)))
+    (quicklisp-apropos--open-buffer-with-results buffer-name
+                                                 (mapcar #'car results))))
+
+(defun quicklisp-apropos (query)
+  (interactive "sQuicklisp apropos: ")
+
+  (funcall quicklisp-apropos-query-results-function
+           query))
 
 (defun quicklisp-apropos-system (query)
   (interactive "s"))
