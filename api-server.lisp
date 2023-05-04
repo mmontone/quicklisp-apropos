@@ -10,7 +10,7 @@
 
 (defparameter *index* (make-instance 'montezuma:index
 				     :path "/home/marian/src/quicklisp-docs-index"
-				     ))
+				     :create-if-missing-p nil))
 
 (defun parse-document (doc)
   (flet ((docvalue (field)

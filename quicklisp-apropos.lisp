@@ -21,7 +21,8 @@
 
 (defun ensure-index ()
   (when (null *index*)
-    (setf *index* (make-instance 'montezuma:index :path *index-path*))))
+    (setf *index* (make-instance 'montezuma:index :path *index-path*
+				 :create-if-missing-p nil))))
 
 (defun format-query (query)
   (when (stringp query)
