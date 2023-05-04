@@ -19,6 +19,10 @@
 	     (when (not (string= val "NIL"))
 	       val))))
     (string-case:string-case ((docvalue "type"))
+      ("system"
+       (list (cons "type" "system")
+	     (cons "name" (docvalue "name"))
+	     (cons "doc" (docvalue "doc"))))
       ("package"
        (list (cons "type" "package")
 	     (cons "name" (docvalue "name"))
