@@ -128,8 +128,10 @@
   (ensure-index)
   (maybe-print-results (query-index (format nil "+type:'generic-function', name:'~a', doc:'~a'" query query) :count count) print-results))
 
-(defun download-index ()
-   (trivial-download:download "https://github.com/mmontone/quicklisp-apropos/releases/download/v0.0.1-index/quicklisp-apropos-index.tar.gz" "/tmp/quicklisp-apropos-index.tar.gz"))
+(defvar *index-file-url* "https://github.com/mmontone/quicklisp-apropos/releases/latest/download/quicklisp-apropos-index.tar.gz")
+
+(defun download-index (&optional (index-file-url *index-file-url*))
+   (trivial-download:download index-file-url))
 
 (defun extract-tarball (pathname)
   "Extract a tarball (.tar.gz) file to a directory (*default-pathname-defaults*)."
