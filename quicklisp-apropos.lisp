@@ -126,4 +126,17 @@
   (ensure-index)
   (maybe-print-results (query-index (format nil "+type:'generic-function', name:'~a', doc:'~a'" query query) :count count) print-results))
 
+(defun download-index ()
+   (trivial-download:download "https://github.com/mmontone/quicklisp-apropos/releases/download/v0.0.1-index/quicklisp-apropos-index.tar.gz" "/tmp/quicklisp-apropos-index.tar.gz"))
+
+(defun extract-tarball (pathname)
+  "Extract a tarball (.tar.gz) file to a directory (*default-pathname-defaults*)."
+  (with-open-file (tarball-stream pathname
+                   :direction :input
+                   :element-type '(unsigned-byte 8))
+    (archive::extract-files-from-archive
+     (archive:open-archive 'archive:tar-archive
+      (chipz:make-decompressing-stream 'chipz:gzip tarball-stream)
+      :direction :input))))
+
 (in-package :quicklisp-apropos)
