@@ -121,13 +121,13 @@
   (let* ((results
           (slime-eval `(cl:with-output-to-string
                         (cl:*standard-output*)
-                        (quicklisp-apropos:quicklisp-apropos ,query :count ,quicklisp-apropos-max-results))))
+                        (quicklisp-apropos:apropos ,query :count ,quicklisp-apropos-max-results))))
          (buffer-name (format "*quicksearch: %s*" query)))
     (quicklisp-apropos--open-buffer-with-printed-results buffer-name results)))
 
 (defun quicklisp-apropos--query-results (query)
   (let* ((results
-          (slime-eval `(quicklisp-apropos:quicklisp-apropos ,query :count ,quicklisp-apropos-max-results :print-results nil)))
+          (slime-eval `(quicklisp-apropos:apropos ,query :count ,quicklisp-apropos-max-results :print-results nil)))
          (buffer-name (format "*quicksearch: %s*" query)))
     (quicklisp-apropos--open-buffer-with-results buffer-name
                                                  (mapcar #'car results))))
