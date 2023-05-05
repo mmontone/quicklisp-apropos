@@ -46,6 +46,27 @@
 (defvar *index-file-url* "https://github.com/mmontone/quicklisp-apropos/releases/latest/download/quicklisp-apropos-index.tar.gz")
 (defvar *index-file-name* "quicklisp-apropos-index.tar.gz")
 
+;;-------- Index update -------------------------------------------------------
+
+(defun extract-tarball (pathname)
+  "Extract a tarball (.tar.gz) file to a directory (*default-pathname-defaults*)."
+  (with-open-file (tarball-stream pathname
+                                  :direction :input
+                                  :element-type '(unsigned-byte 8))
+    (archive::extract-files-from-archive
+     (archive:open-archive 'archive:tar-archive
+                           (chipz:make-decompressing-stream 'chipz:gzip tarball-stream)
+                           :direction :input))))
+
+(defun download-index (&optional (index-file-url *index-file-url*))
+  (format t "Downloading quicklisp-apropos index from ~a ... ~%" index-file-url)
+  (ql-util:with-temporary-file (quicklisp-apropos-index.tar.gz (pathname-name *index-file-name*))
+    (dex:fetch index-file-url quicklisp-apropos-index.tar.gz)
+    (format t "Extracting index ...~%")
+    (let ((*default-pathname-defaults* *quicklisp-apropos-directory*))
+      (extract-tarball quicklisp-apropos-index.tar.gz))
+    (format t "Index created in ~a~%" *quicklisp-apropos-directory*)))
+
 (defun ensure-index ()
   (when (null *index*)
     (when (not (probe-file *index-path*))
@@ -158,26 +179,5 @@
 (defun apropos-generic-function (query &key (count *results-count*) (print-results t))
   (ensure-index)
   (maybe-print-results (query-index (format nil "+type:'generic-function', name:'~a', doc:'~a'" query query) :count count) print-results))
-
-;;-------- Index update -------------------------------------------------------
-
-(defun extract-tarball (pathname)
-  "Extract a tarball (.tar.gz) file to a directory (*default-pathname-defaults*)."
-  (with-open-file (tarball-stream pathname
-                                  :direction :input
-                                  :element-type '(unsigned-byte 8))
-    (archive::extract-files-from-archive
-     (archive:open-archive 'archive:tar-archive
-                           (chipz:make-decompressing-stream 'chipz:gzip tarball-stream)
-                           :direction :input))))
-
-(defun download-index (&optional (index-file-url *index-file-url*))
-  (format t "Downloading quicklisp-apropos index from ~a ... ~%" index-file-url)
-  (ql-util:with-temporary-file (quicklisp-apropos-index.tar.gz (pathname-name *index-file-name*))
-    (dex:fetch index-file-url quicklisp-apropos-index.tar.gz)
-    (format t "Extracting index ...~%")
-    (let ((*default-pathname-defaults* *quicklisp-apropos-directory*))
-      (extract-tarball quicklisp-apropos-index.tar.gz))
-    (format t "Index created in ~a~%" *quicklisp-apropos-directory*)))
 
 (provide :quicklisp-apropos)
