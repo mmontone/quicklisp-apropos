@@ -84,6 +84,8 @@
 (defun quicklisp-apropos (query &key (count *results-count*)
 				  (print-results t))
   (ensure-index)
+  (when (not (find #\: query))
+    (setq query (format nil "name:'~a', doc:'~a'" query query)))
   (maybe-print-results (query-index query :count count) print-results))
 
 (defun quicklisp-apropos-system (query &key (count *results-count*) (print-results t))

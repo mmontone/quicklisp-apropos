@@ -72,17 +72,22 @@
               (system (cdr (assoc-string "system" result))))
           (insert type)
           (insert " ")
-	  (if system
+          (if (string= type "system")
               (insert-button name
                              'follow-link t
-                             'help-echo "Load system and edit definition."
+                             'help-echo "Load system."
                              'action (lambda (_)
-                                       (when (yes-or-no-p (format "Load %s system?" system))
-					 (slime-eval `(ql:quickload ,system))
-					 (slime-edit-definition name))))
-	    ;; else
-	    (insert name))
-	  (when system
+                                       (when (yes-or-no-p (format "Load %s system?" name))
+                                         (slime-eval `(ql:quickload ,name)))))
+            ;; else
+            (insert-button name
+                           'follow-link t
+                           'help-echo "Load system and edit definition."
+                           'action (lambda (_)
+                                     (when (yes-or-no-p (format "Load %s system?" system))
+                                       (slime-eval `(ql:quickload ,system))
+                                       (slime-edit-definition name)))))
+          (when system
             (insert " in system ")
             (insert-button system
                            'follow-link t
@@ -91,7 +96,7 @@
                                      (when (yes-or-no-p (format "Load %s system?" system))
                                        (slime-eval `(ql:quickload ,system))))))
           (when doc
-	    (newline 2)
+            (newline 2)
             (insert doc))
           (newline)
           (insert "--------------------------------------------------------------------------------")
@@ -128,10 +133,14 @@
                                                  (mapcar #'car results))))
 
 (defun quicklisp-apropos (query)
+  "Apropos quicklisp using a generic QUERY.
+If QUERY contains a ?: color character, then interpret the query
+as a Montezuma query string. If not, then build a proper Montezuma query with the term,
+one that looks into 'name' and 'doc' fields."
+
   (interactive "sQuicklisp apropos: ")
 
-  (funcall quicklisp-apropos-query-results-function
-           query))
+  (funcall quicklisp-apropos-query-results-function query))
 
 (defun quicklisp-apropos-system (query)
   (interactive "s"))
@@ -146,7 +155,11 @@
   (interactive "s"))
 
 (defun quicklisp-apropos-function (query)
-  (interactive "s"))
+  (interactive "sApropos function: ")
+
+  (funcall quicklisp-apropos-query-results-function
+           (format "+type:function, name:'%s', doc:'%s'"
+                   query query)))
 
 (defun quicklisp-apropos-macro (query)
   (interactive "s"))
