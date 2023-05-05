@@ -72,22 +72,27 @@
               (system (cdr (assoc-string "system" result))))
           (insert type)
           (insert " ")
-          (insert-button name
-                         'follow-link t
-                         'help-echo "Load system and edit definition."
-                         'action (lambda (_)
-                                   (when (yes-or-no-p (format "Load %s system?" system))
-                                     (slime-eval `(ql:quickload ,system))
-                                     (slime-edit-definition name))))
-          (insert " in system ")
-          (insert-button system
-                         'follow-link t
-                         'help-echo "Load system"
-                         'action (lambda (_)
-                                   (when (yes-or-no-p (format "Load %s system?" system))
-                                     (slime-eval `(ql:quickload ,system)))))
-          (newline 2)
-          (insert doc)
+	  (if system
+              (insert-button name
+                             'follow-link t
+                             'help-echo "Load system and edit definition."
+                             'action (lambda (_)
+                                       (when (yes-or-no-p (format "Load %s system?" system))
+					 (slime-eval `(ql:quickload ,system))
+					 (slime-edit-definition name))))
+	    ;; else
+	    (insert name))
+	  (when system
+            (insert " in system ")
+            (insert-button system
+                           'follow-link t
+                           'help-echo "Load system"
+                           'action (lambda (_)
+                                     (when (yes-or-no-p (format "Load %s system?" system))
+                                       (slime-eval `(ql:quickload ,system))))))
+          (when doc
+	    (newline 2)
+            (insert doc))
           (newline)
           (insert "--------------------------------------------------------------------------------")
           (newline)))
