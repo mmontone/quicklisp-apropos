@@ -17,6 +17,8 @@
 (require :quicklisp)
 (require :chipz)
 (require :archive)
+(require :montezuma)
+(require :string-case)
 
 (defpackage :quicklisp-apropos
   (:use :cl)
