@@ -190,7 +190,7 @@ one that looks into 'name' and 'doc' fields."
   (interactive "sQuicklisp apropos macro: ")
 
   (funcall quicklisp-apropos-query-results-function
-           'quicklisp-apropos:apropos-function query))
+           'quicklisp-apropos:apropos-macro query))
 
 (defun quicklisp-apropos-generic-function (query)
   "Search across CLOS generic functions exported in Quicklisp libraries that match the QUERY."
