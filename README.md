@@ -16,15 +16,15 @@ Example of `apropos-function` with the query: "random string":
 
 ### REPL access
 
-This library does not require Emacs and SLIME. You can simply load it and evaluat apropos functions from a REPL.
+This library does not require Emacs and SLIME. 
 
-Just load `quicklisp-apropos.lisp`. Then evaluate the `apropos` functions in `quicklisp-apropos` package from a Lisp listener.
+Load `quicklisp-apropos.lisp`. Then evaluate the `apropos` functions in `quicklisp-apropos` package from a Lisp listener.
 
 ### SLIME extension
 
-The SLIME extension displays apropos results in Emacs buffers from which you can directly navigate to the matching definitons.
-
 ℹ️ Please consider using [SLIME :star:](https://github.com/mmontone/slime-star), that comes with this extension preinstalled.
+
+The SLIME extension displays apropos results in Emacs buffers from which you can directly navigate to the matching definitons.
 
 Load `swank` and add this repository path to `swank::*load-path*`, in your Lisp compiler init file (~/.sbclrc if using SBCL):
 
@@ -45,7 +45,7 @@ In Emacs, add this repository path to `load-path` and add `quicklisp-apropos` to
 
 ## Use
 
-### quicklisp-apropos package functions
+### QUICKLISP-APROPOS package functions
 
 * `APROPOS`
   Function: Perform apropos QUERY across libraries in Quicklisp.
