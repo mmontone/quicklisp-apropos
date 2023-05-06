@@ -1,4 +1,4 @@
-;; Copyright (C) 2021 Mariano Montone
+;; Copyright (C) 2023 Mariano Montone
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -35,16 +35,24 @@
    #:apropos-macro
    #:apropos-name
    #:apropos-doc
-   #:download-index))
+   #:download-index)
+  (:documentation "Provides apropos functions that work across Quicklisp libraries."))
 
 (in-package :quicklisp-apropos)
 
-(defparameter *quicklisp-apropos-directory* (uiop/pathname:pathname-directory-pathname *load-pathname*))
-(defparameter *index-path* (merge-pathnames "quicklisp-apropos-index/" *quicklisp-apropos-directory*))
-(defparameter *index* nil)
-(defvar *results-count* 50)
-(defvar *index-file-url* "https://github.com/mmontone/quicklisp-apropos/releases/latest/download/quicklisp-apropos-index.tar.gz")
-(defvar *index-file-name* "quicklisp-apropos-index.tar.gz")
+(defparameter *quicklisp-apropos-directory*
+  (uiop/pathname:pathname-directory-pathname *load-pathname*)
+  "This is the root path for the index. Uses *LOAD-PATHNAME* as default.")
+(defparameter *index-path*
+  (merge-pathnames "quicklisp-apropos-index/" *quicklisp-apropos-directory*)
+  "The path of the Montezuma index with Quicklisp libraries definitions information.")
+(defparameter *index* nil
+  "The Montezuma index.")
+(defvar *results-count* 50
+  "Number of results to fetch in Montezuma queries.")
+(defvar *index-file-url*
+  "https://github.com/mmontone/quicklisp-apropos/releases/latest/download/quicklisp-apropos-index.tar.gz"
+  "The url of the index file to download.")
 
 ;;-------- Index update -------------------------------------------------------
 
@@ -59,8 +67,9 @@
                            :direction :input))))
 
 (defun download-index (&optional (index-file-url *index-file-url*))
+  "Download index from INDEX-FILE-URL."
   (format t "Downloading quicklisp-apropos index from ~a ... ~%" index-file-url)
-  (ql-util:with-temporary-file (quicklisp-apropos-index.tar.gz (pathname-name *index-file-name*))
+  (ql-util:with-temporary-file (quicklisp-apropos-index.tar.gz (file-namestring index-file-url))
     (dex:fetch index-file-url quicklisp-apropos-index.tar.gz)
     (format t "Extracting index ...~%")
     (let ((*default-pathname-defaults* *quicklisp-apropos-directory*))
@@ -68,6 +77,7 @@
     (format t "Index created in ~a~%" *quicklisp-apropos-directory*)))
 
 (defun ensure-index ()
+  "Make sure an index has been downloaded."
   (when (null *index*)
     (when (not (probe-file *index-path*))
       (download-index))
@@ -75,12 +85,14 @@
                                                   :create-if-missing-p nil))))
 
 (defun format-query (query)
+  "Format a Montezuma query from QUERY."
   (when (stringp query)
     (return-from format-query query))
   (when (listp query)
-    ()))
+    (error "TODO")))
 
 (defun parse-document (doc)
+  "Parse Montezuma DOC into an alist."
   (flet ((docvalue (field)
            (let ((val (montezuma:document-value doc field)))
              ;; NILs in Montezuma are stored as a string "NIL"
@@ -104,6 +116,7 @@
              (cons "system" (docvalue "system")))))))
 
 (defun query-index (query &key (count *results-count*))
+  "Query the index."
   (let (found)
     (montezuma:search-each *index* query
                            #'(lambda (doc score)
@@ -112,6 +125,7 @@
     (nreverse found)))
 
 (defun print-result (result)
+  "Print an apropos RESULT to *STANDARD-OUTPUT*."
   (format t "~a ~a in system ~a~%"
           (alexandria:assoc-value result "type" :test #'string=)
           (alexandria:assoc-value result "name" :test #'string=)
@@ -120,6 +134,7 @@
     (format t "~%~a~%" (alexandria:assoc-value result "doc" :test #'string=))))
 
 (defun print-results (results)
+  "Print apropos RESULTS to *STANDARD-OUTPUT*"
   (format t "~a results:~%~%" (length results))
   (format t "--------------------------------------------------------------------------------~%")
   (dolist (result results)
@@ -135,12 +150,14 @@
 
 (defun apropos (query &key (count *results-count*)
                         (print-results t))
+  "Perform apropos QUERY across libraries in Quicklisp."
   (ensure-index)
   (when (not (find #\: query))
     (setq query (format nil "name:'~a', doc:'~a'" query query)))
   (maybe-print-results (query-index query :count count) print-results))
 
 (defun apropos-system (query &key (count *results-count*) (print-results t))
+  "Perform apropos QUERY on ASDF systems of Quicklisp libraries."
   (ensure-index)
   (maybe-print-results (query-index (format nil "+type:system, name: '~a', doc:'~a'"
                                             query query)
@@ -148,35 +165,43 @@
                        print-results))
 
 (defun apropos-package (query &key (count *results-count*) (print-results t))
+  "Perform apropos QUERY on packages of Quicklisp libraries."
   (ensure-index)
   (maybe-print-results (query-index (format nil "+type:package, name:'~a', doc:'~a'" query query) :count count)
                        print-results))
 
 (defun apropos-name (query &key (count *results-count*) (print-results t))
+  "Perform apropos QUERY to match exported names of Quicklisp libraries."
   (ensure-index)
   (maybe-print-results (query-index (format nil "+name:'~a'" query) :count count) print-results))
 
 (defun apropos-doc (query &key (count *results-count*) (print-results t))
+  "Perform apropos QUERY to match in documentation of exported definitions of Quicklisp libraries."
   (ensure-index)
   (maybe-print-results (query-index (format nil "+doc:'~a'" query) :count count) print-results))
 
 (defun apropos-variable (query &key (count *results-count*) (print-results t))
+  "Perform apropos QUERY to match exported variables of Quicklisp libraries."
   (ensure-index)
   (maybe-print-results (query-index (format nil "+type:variable, name:'~a', doc:'~a'" query query) :count count) print-results))
 
 (defun apropos-class (query &key (count *results-count*) (print-results t))
+  "Perform apropos QUERY to match exported CLOS classes of Quicklisp libraries."
   (ensure-index)
   (maybe-print-results (query-index (format nil "+type:class, name:'~a',doc:'~a'" query query) :count count) print-results))
 
 (defun apropos-function (query &key (count *results-count*) (print-results t))
+  "Perform apropos QUERY to match exported functions of Quicklisp libraries."
   (ensure-index)
   (maybe-print-results (query-index (format nil "+type:function, name:'~a', doc:'~a'" query query) :count count) print-results))
 
 (defun apropos-macro (query &key (count *results-count*) (print-results t))
+  "Perform apropos QUERY to match exported macros of Quicklisp libraries."
   (ensure-index)
   (maybe-print-results (query-index (format nil "+type:'macro', name:'~a', doc:'~a'" query query) :count count) print-results))
 
 (defun apropos-generic-function (query &key (count *results-count*) (print-results t))
+  "Perform apropos QUERY to match exported CLOS generic functions of Quicklisp libraries."
   (ensure-index)
   (maybe-print-results (query-index (format nil "+type:'generic-function', name:'~a', doc:'~a'" query query) :count count) print-results))
 

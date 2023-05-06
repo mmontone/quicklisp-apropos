@@ -10,6 +10,29 @@ Example of `apropos-function` with the query: "random string":
 
 ![apropos-random-string-example](apropos-random-string.png "Example result of apropos with 'random string' as query")
 
+## quicklisp-apropos package functions
+
+* **APROPOS**
+  Function: Perform apropos QUERY across libraries in Quicklisp.
+* **APROPOS-CLASS**
+  Function: Perform apropos QUERY to match exported CLOS classes of Quicklisp libraries.
+* **APROPOS-DOC**
+  Function: Perform apropos QUERY to match in documentation of exported definitions of Quicklisp libraries.
+* **APROPOS-FUNCTION**
+  Function: Perform apropos QUERY to match exported functions of Quicklisp libraries.
+* **APROPOS-GENERIC-FUNCTION**
+  Function: Perform apropos QUERY to match exported CLOS generic functions of Quicklisp libraries.
+* **APROPOS-MACRO**
+  Function: Perform apropos QUERY to match exported macros of Quicklisp libraries.
+* **APROPOS-NAME**
+  Function: Perform apropos QUERY to match exported names of Quicklisp libraries.
+* **APROPOS-PACKAGE**
+  Function: Perform apropos QUERY on packages of Quicklisp libraries.
+* **APROPOS-SYSTEM**
+  Function: Perform apropos QUERY on ASDF systems of Quicklisp libraries.
+* **APROPOS-VARIABLE**
+  Function: Perform apropos QUERY to match exported variables of Quicklisp libraries.
+
 ## Emacs commands
 
 * `quicklisp-apropos`
