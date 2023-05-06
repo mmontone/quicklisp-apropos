@@ -176,9 +176,34 @@ one that looks into 'name' and 'doc' fields."
   (funcall quicklisp-apropos-query-results-function
            'quicklisp-apropos:apropos-generic-function query))
 
+;;---- SLIME integration ------------------------------------------------------
+
+(defun quicklisp-apropos--add-to-slime-menu ()
+  "Add quicklisp-apropos menu to SLIME menu."
+  (easy-menu-add-item 'menubar-slime nil '("---"))
+  (easy-menu-add-item 'menubar-slime nil
+		      '("Quicklisp apropos"
+			["Apropos" quicklisp-apropos
+			 :help "Apropos across Quicklisp libraries."]
+			["Apropos function" quicklisp-apropos-function
+			 :help "Apropos functions exported across Quicklisp libraries."]
+			["Apropos variable" quicklisp-apropos-variable
+			 :help "Apropos variables exported across Quicklisp libraries."]
+			["Apropos class" quicklisp-apropos-class
+			 :help "Apropos classes exported across Quicklisp libraries."]
+			["Apropos system" quicklisp-apropos-system
+			 :help "Apropos ASDF systems across Quicklisp libraries."]
+			["Apropos package" quicklisp-apropos-package
+			 :help "Apropos packages across Quicklisp libraries."]
+			)))
+
 (define-slime-contrib quicklisp-apropos
-  "SLIME extension for running apropos queries across Quicklisp libraries."
-  (:swank-dependencies quicklisp-apropos))
+  "Apropos across Quicklisp libraries."
+  (:authors "Mariano Montone")
+  (:license "GPL")
+  (:swank-dependencies quicklisp-apropos)
+  (:on-load
+   (quicklisp-apropos--add-to-slime-menu)))
 
 (provide 'quicklisp-apropos)
 
