@@ -8,13 +8,19 @@ Example of `apropos-function` with the query: "random string":
 
 ## Install
 
-## REPL access
+### Install dependencies
+
+```lisp
+(ql:quickload '(:dexador :chipz :archive :montezuma :string-case))
+```
+
+### REPL access
 
 This library does not require Emacs and SLIME. You can simply load it and evaluat apropos functions from a REPL.
 
 Just load `quicklisp-apropos.lisp`. Then evaluate the `apropos` functions in `quicklisp-apropos` package from a Lisp listener.
 
-## SLIME extension
+### SLIME extension
 
 The SLIME extension displays apropos results in Emacs buffers from which you can directly navigate to the matching definitons.
 
@@ -37,7 +43,9 @@ In Emacs, add this repository path to `load-path` and add `quicklisp-apropos` to
 (slime-setup)
 ```
 
-## quicklisp-apropos package functions
+## Use
+
+### quicklisp-apropos package functions
 
 * `APROPOS`
   Function: Perform apropos QUERY across libraries in Quicklisp.
@@ -60,7 +68,7 @@ In Emacs, add this repository path to `load-path` and add `quicklisp-apropos` to
 * `APROPOS-VARIABLE`
   Function: Perform apropos QUERY to match exported variables of Quicklisp libraries.
 
-## Emacs commands
+### Emacs commands
 
 * `quicklisp-apropos`
    Apropos quicklisp using a generic QUERY.
