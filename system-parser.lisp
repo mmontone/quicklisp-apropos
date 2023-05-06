@@ -7,7 +7,7 @@
 
 (in-package :system-parser)
 
-(defparameter *index* (make-instance 'montezuma:index :path "/home/marian/src/quicklisp-docs-index"))
+(defparameter *index* (make-instance 'montezuma:index :path "quicklisp-docs-index"))
 
 (defun make-document (node system)
   (typecase node
@@ -46,8 +46,6 @@
 	   (cons "doc" (docparser:node-docstring node))
 	   (cons "package" (package-name (symbol-package (docparser:node-name node))))
 	   (cons "system" (princ-to-string system))))))
-
-;; (asdf/find-system:load-asd file)
 
 (defun read-system-doc (system-designator)
   (let ((readme-files (concatenate 'list

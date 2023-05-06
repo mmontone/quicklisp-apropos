@@ -2,12 +2,11 @@
 ;; - Setup quicklisp-controller: (quicklisp-controller:setup-directories "~/src/lisp/quicklisp-projects/")
 ;; - Update the list of Quicklisp systems using QUICKLISP-CONTROLLER::UPDATE-WHAT-YOU-CAN.
 
-(defpackage #:quicklisp-docs-index
-  (:use #:cl))
+(defpackage #:quicklisp-apropos-index
+  (:use #:cl)
+  (:export #:index-quicklisp-systems))
 
-(in-package #:quicklisp-docs-index)
-
-(defparameter *quicklisp-controller-directory* #p"~/quicklisp-controller/")
+(in-package #:quicklisp-apropos-index)
 
 (defun find-files-do (path pattern function &optional (include-subdirectories t))
   "Find files in PATH using PATTERN. Invokes FUNCTION on found files.
@@ -18,10 +17,11 @@ If INCLUDE-SUBDIRECTORIES is T, then work recursively."
     (dolist (subdir (uiop/filesystem:subdirectories path))
       (find-files-do subdir pattern function include-subdirectories))))
 
-(defun index-quicklisp-systems (&key start-after-system ignore)
+(defun index-quicklisp-systems (quicklisp-controller-directory &key start-after-system ignore)
+  "Build a Montezuma index with information about all exported definitions in Quicklisp libraries."
   (let ((start (not start-after-system)))
     (find-files-do
-     (merge-pathnames #p"upstream-cache/" *quicklisp-controller-directory*)
+     (merge-pathnames #p"upstream-cache/" quicklisp-controller-directoryx)
      "*.asd"
      (lambda (file)
        (let ((system-name (pathname-name file)))
