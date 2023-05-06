@@ -1,4 +1,4 @@
-;;; quicklisp-apropos.el --- Commands for quicklisp-apropos      -*- lexical-binding: t -*-
+;;; quicklisp-apropos.el --- Commands for quicklisp-apropos -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2023 Mariano Montone
 
@@ -15,54 +15,37 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+;;; Commentary:
+
 ;; Install:
 ;; Emacs side: just put this file in your load-path and load it on init.
-;; Lisp side: add (require :quicksearch) to your compiler init file (i.e. .sbclrc).
-;; NOTE:
-;; Current quicksearch is buggy for some results.
-;; I recommend you apply this patch: https://github.com/tkych/quicksearch/issues/10
+;; Lisp side: (load "quicklisp-apropos.lisp") in your init file (i.e. .sbclrc).
 
 ;; Use:
-;; M-x quicksearch
-;; Customize max results with: M-x customize-variable RET quicksearch-max-results RET
+;; M-x quicklisp-apropos
+;; Customize max results with: M-x customize-variable RET quicklisp-apropos-max-results RET
+
+;;; Code:
 
 (require 'slime)
 
+(defgroup quicklisp-apropos nil
+  "Quicklisp-apropos settings."
+  :group 'slime)
+
 (defcustom quicklisp-apropos-max-results 50
-  "Maximum number of results to be returned by quicklisp-apropos.")
+  "Maximum number of results to be returned by quicklisp-apropos."
+  :type 'integer
+  :group 'quicklisp-apropos)
 
 (defcustom quicklisp-apropos-query-results-function
   'quicklisp-apropos--query-results
-  "Internal function to use for fetching and showing quicklisp-apropos results.")
-
-
-
-;; (define-button-type 'quicksearch-link-button
-;;   'action #'quicksearch--follow-link
-;;   'follow-link t
-;;   'help-echo "Follow this link")
-
-;; (defun quicksearch--propertize-links (string)
-;;   "Convert URL links in strings to buttons."
-;;   (replace-regexp-in-string
-;;    (rx (group (or string-start space "<"))
-;;        (group "http" (? "s") "://" (+? (not (any space))))
-;;        (group (? (any "." ">" ")"))
-;;               (or space string-end ">")))
-;;    (lambda (match)
-;;      (let ((space-before (match-string 1 match))
-;;            (url (match-string 2 match))
-;;            (after (match-string 3 match)))
-;;        (concat
-;;         space-before
-;;         (quicksearch--button
-;;          url
-;;          'quicksearch-link-button
-;;          'url url)
-;;         after)))
-;;   string))
+  "Internal function to use for fetching and showing quicklisp-apropos results."
+  :type 'symbol
+  :group 'quicklisp-apropos)
 
 (defun quicklisp-apropos--open-buffer-with-results (buffer-name results)
+  "Open a buffer named with BUFFER-NAME and show the list of apropos RESULTS."
   (let ((buffer (get-buffer-create buffer-name)))
     (with-current-buffer buffer
       (dolist (result results)
@@ -108,6 +91,7 @@
       (pop-to-buffer buffer))))
 
 (defun quicklisp-apropos--open-buffer-with-printed-results (buffer-name results)
+  "Open a buffer named with BUFFER-NAME and show the printed apropos RESULTS."
   (let ((buffer (get-buffer-create buffer-name)))
     (with-current-buffer buffer
       (insert results)
@@ -117,58 +101,85 @@
       (goto-char 0)
       (pop-to-buffer buffer))))
 
-(defun quicklisp-apropos--query-printed-results (query)
+(defun quicklisp-apropos--query-printed-results (apropos-function query)
+  "Call APROPOS-FUNCTION with QUERY.
+The printed results are show in an Emacs buffer."
   (let* ((results
           (slime-eval `(cl:with-output-to-string
                         (cl:*standard-output*)
-                        (quicklisp-apropos:apropos ,query :count ,quicklisp-apropos-max-results))))
-         (buffer-name (format "*quicksearch: %s*" query)))
+                        (,apropos-function ,query :count ,quicklisp-apropos-max-results))))
+         (buffer-name (format "*quicklisp-apropos: %s*" query)))
     (quicklisp-apropos--open-buffer-with-printed-results buffer-name results)))
 
-(defun quicklisp-apropos--query-results (query)
+(defun quicklisp-apropos--query-results (apropos-function query)
+  "Call APROPOS-FUNCTION with QUERY.  Show result in an Emacs buffer."
   (let* ((results
-          (slime-eval `(quicklisp-apropos:apropos ,query :count ,quicklisp-apropos-max-results :print-results nil)))
-         (buffer-name (format "*quicksearch: %s*" query)))
+          (slime-eval `(,apropos-function ,query :count ,quicklisp-apropos-max-results :print-results nil)))
+         (buffer-name (format "*quicklisp-apropos: %s*" query)))
     (quicklisp-apropos--open-buffer-with-results buffer-name
                                                  (mapcar #'car results))))
 
 (defun quicklisp-apropos (query)
   "Apropos quicklisp using a generic QUERY.
 If QUERY contains a ?: color character, then interpret the query
-as a Montezuma query string. If not, then build a proper Montezuma query with the term,
+as a Montezuma query string.
+Otherwise, build a proper Montezuma query with the term,
 one that looks into 'name' and 'doc' fields."
 
   (interactive "sQuicklisp apropos: ")
 
-  (funcall quicklisp-apropos-query-results-function query))
+  (funcall quicklisp-apropos-query-results-function
+           'quicklisp-apropos:apropos query))
 
 (defun quicklisp-apropos-system (query)
-  (interactive "s"))
+  "Search across ASDF systems in Quicklisp libraries that match the QUERY."
+  (interactive "sQuicklisp apropos system: ")
+  (funcall quicklisp-apropos-query-results-function
+           'quicklisp-apropos:apropos-system query))
 
 (defun quicklisp-apropos-package (query)
-  (interactive "s"))
+  "Search across Lisp packages in Quicklisp libraries that match the QUERY."
+  (interactive "sQuicklisp apropos package: ")
+  (funcall quicklisp-apropos-query-results-function
+           'quicklisp-apropos:apropos-package query))
 
 (defun quicklisp-apropos-variable (query)
-  (interactive "s"))
+  "Search across Lisp variables exported in Quicklisp libraries that match the QUERY."
+  (interactive "sQuicklisp apropos variable: ")
+  (funcall quicklisp-apropos-query-results-function
+           'quicklisp-apropos:apropos-variable query))
 
 (defun quicklisp-apropos-class (query)
-  (interactive "s"))
+  "Search across CLOS classes exported in Quicklisp libraries that match the QUERY."
+  (interactive "sQuicklisp apropos class: ")
+  (funcall quicklisp-apropos-query-results-function
+           'quicklisp-apropos:apropos-class query))
 
 (defun quicklisp-apropos-function (query)
-  (interactive "sApropos function: ")
+  "Search across Lisp functions exported in Quicklisp libraries that match the QUERY."
+  (interactive "sQuicklisp apropos function: ")
 
   (funcall quicklisp-apropos-query-results-function
-           (format "+type:function, name:'%s', doc:'%s'"
-                   query query)))
+           'quicklisp-apropos:apropos-function query))
 
 (defun quicklisp-apropos-macro (query)
-  (interactive "s"))
+  "Search across Lisp macros exported in Quicklisp libraries that match the QUERY."
+  (interactive "sQuicklisp apropos macro: ")
+
+  (funcall quicklisp-apropos-query-results-function
+           'quicklisp-apropos:apropos-function query))
 
 (defun quicklisp-apropos-generic-function (query)
-  (interactive "s"))
+  "Search across CLOS generic functions exported in Quicklisp libraries that match the QUERY."
+  (interactive "sQuicklisp apropos generic function: ")
+
+  (funcall quicklisp-apropos-query-results-function
+           'quicklisp-apropos:apropos-generic-function query))
 
 (define-slime-contrib quicklisp-apropos
   "SLIME extension for running apropos queries across Quicklisp libraries."
   (:swank-dependencies quicklisp-apropos))
 
 (provide 'quicklisp-apropos)
+
+;;; quicklisp-apropos.el ends here
