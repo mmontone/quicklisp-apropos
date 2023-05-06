@@ -2,13 +2,38 @@
 
 Apropos across Quicklisp libraries.
 
-WIP
-
-Coming Soon.
-
 Example of `apropos-function` with the query: "random string":
 
 ![apropos-random-string-example](apropos-random-string.png "Example result of apropos with 'random string' as query")
+
+## Install
+
+## REPL access
+
+Just load `quicklisp-apropos.lisp`. Then evaluate the `apropos` functions in `quicklisp-apropos` from a Lisp listener.
+
+## SLIME extension
+
+ℹ️ Please consider using [SLIME :star:](https://github.com/mmontone/slime-star), that comes with this extension preinstalled.
+
+Load `swank` and add this repository path to `swank::*load-path*`, in your Lisp compiler init file (~/.sbclrc if using SBCL):
+
+```lisp
+(require :swank)
+(push #p"/home/marian/src/lisp/quicklisp-apropos/" swank::*load-path*)
+```
+
+In Emacs, add this repository path to `load-path` and add `quicklisp-apropos` to `slime-contribs` in `~/.emacs` init file, like:
+
+```
+(push "/home/marian/src/lisp/quicklisp-apropos" load-path)
+
+(setq slime-contribs '(slime-fancy quicklisp-apropos))
+
+(slime-setup)
+```
+
+The SLIME extension displays apropos results in Emacs buffer from which you can directly navigate to the matching definitons.
 
 ## quicklisp-apropos package functions
 
@@ -60,4 +85,11 @@ Example of `apropos-function` with the query: "random string":
    match the QUERY.
 * `quicklisp-apropos-update-index`
    Download and update quicklisp-apropos index.
+   
+## How it works
+
+A [Montezuma](https://github.com/sharplispers/montezuma) index is downloaded from the internet. 
+Montezuma is a text search engine library for Common Lisp.
+The downloaded index contains documentation information about definitions exported by all Quicklisp libraries.
+Apropos functions perform Montezuma queries over that index and displays the results.
 
