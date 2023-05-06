@@ -44,6 +44,13 @@
   :type 'symbol
   :group 'quicklisp-apropos)
 
+(defun quicklisp-apropos-update-index ()
+  "Download and update quicklisp-apropos index."
+  (interactive)
+  (message "Downloding quicklisp-apropos index ...")
+  (slime-eval '(quicklisp-apropos:download-index))
+  (message "quicklisp-apropos index updated."))
+
 (defun quicklisp-apropos--open-buffer-with-results (buffer-name results)
   "Open a buffer named with BUFFER-NAME and show the list of apropos RESULTS."
   (let ((buffer (get-buffer-create buffer-name)))
@@ -195,6 +202,8 @@ one that looks into 'name' and 'doc' fields."
 			 :help "Apropos ASDF systems across Quicklisp libraries."]
 			["Apropos package" quicklisp-apropos-package
 			 :help "Apropos packages across Quicklisp libraries."]
+			["Update index" quicklisp-apropos-update-index
+			 :help "Download and update quicklisp-apropos index."]
 			)))
 
 (define-slime-contrib quicklisp-apropos
