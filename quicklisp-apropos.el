@@ -51,6 +51,22 @@
   (slime-eval '(quicklisp-apropos:download-index))
   (message "quicklisp-apropos index updated."))
 
+;; Taken from elisp-mode, after elisp-mode--docstring-first-line.
+;; Note that any leading `*' in the docstring (which indicates the variable
+;; is a user option) is removed.
+(defun quicklisp-apropos--docstring-first-line (doc)
+  "Return first line of DOC."
+  (and (stringp doc)
+       (substitute-command-keys
+        (save-match-data
+          ;; Don't use "^" in the regexp below since it may match
+          ;; anywhere in the doc-string.
+          (let ((start (if (string-match "\\`\\*" doc) (match-end 0) 0)))
+            (cond ((string-match "\n" doc)
+                   (substring doc start (match-beginning 0)))
+                  ((zerop start) doc)
+                  (t (substring doc start))))))))
+
 (defun quicklisp-apropos--open-buffer-with-results (buffer-name results)
   "Open a buffer named with BUFFER-NAME and show the list of apropos RESULTS."
   (let ((buffer (get-buffer-create buffer-name)))
@@ -60,12 +76,11 @@
               (type (cdr (assoc-string "type" result)))
               (doc (cdr (assoc-string "doc" result)))
               (system (cdr (assoc-string "system" result))))
-          (insert type)
-          (insert " ")
           (if (string= type "system")
-              (insert-button name
+              (insert-button (upcase name)
                              'follow-link t
                              'help-echo "Load system."
+                             'face 'slime-apropos-symbol
                              'action (lambda (_)
                                        (when (yes-or-no-p (format "Load %s system?" name))
                                          (slime-eval `(ql:quickload ,name)))))
@@ -73,6 +88,7 @@
             (insert-button name
                            'follow-link t
                            'help-echo "Load system and edit definition."
+                           'face 'slime-apropos-symbol
                            'action (lambda (_)
                                      (when (yes-or-no-p (format "Load %s system?" system))
                                        (slime-eval `(ql:quickload ,system))
@@ -85,11 +101,11 @@
                            'action (lambda (_)
                                      (when (yes-or-no-p (format "Load %s system?" system))
                                        (slime-eval `(ql:quickload ,system))))))
-          (when doc
-            (newline 2)
-            (insert doc))
           (newline)
-          (insert "--------------------------------------------------------------------------------")
+          (insert "  " (propertize (capitalize type) 'face 'underline) ": ")
+          (if doc
+              (insert (quicklisp-apropos--docstring-first-line doc))
+            (insert "Not documented"))
           (newline)))
       (local-set-key "q" 'kill-buffer)
       (setq buffer-read-only t)
@@ -189,22 +205,22 @@ one that looks into 'name' and 'doc' fields."
   "Add quicklisp-apropos menu to SLIME menu."
   (easy-menu-add-item 'menubar-slime nil '("---"))
   (easy-menu-add-item 'menubar-slime nil
-		      '("Quicklisp apropos"
-			["Apropos" quicklisp-apropos
-			 :help "Apropos across Quicklisp libraries."]
-			["Apropos function" quicklisp-apropos-function
-			 :help "Apropos functions exported across Quicklisp libraries."]
-			["Apropos variable" quicklisp-apropos-variable
-			 :help "Apropos variables exported across Quicklisp libraries."]
-			["Apropos class" quicklisp-apropos-class
-			 :help "Apropos classes exported across Quicklisp libraries."]
-			["Apropos system" quicklisp-apropos-system
-			 :help "Apropos ASDF systems across Quicklisp libraries."]
-			["Apropos package" quicklisp-apropos-package
-			 :help "Apropos packages across Quicklisp libraries."]
-			["Update index" quicklisp-apropos-update-index
-			 :help "Download and update quicklisp-apropos index."]
-			)))
+                      '("Quicklisp apropos"
+                        ["Apropos" quicklisp-apropos
+                         :help "Apropos across Quicklisp libraries."]
+                        ["Apropos function" quicklisp-apropos-function
+                         :help "Apropos functions exported across Quicklisp libraries."]
+                        ["Apropos variable" quicklisp-apropos-variable
+                         :help "Apropos variables exported across Quicklisp libraries."]
+                        ["Apropos class" quicklisp-apropos-class
+                         :help "Apropos classes exported across Quicklisp libraries."]
+                        ["Apropos system" quicklisp-apropos-system
+                         :help "Apropos ASDF systems across Quicklisp libraries."]
+                        ["Apropos package" quicklisp-apropos-package
+                         :help "Apropos packages across Quicklisp libraries."]
+                        ["Update index" quicklisp-apropos-update-index
+                         :help "Download and update quicklisp-apropos index."]
+                        )))
 
 (define-slime-contrib quicklisp-apropos
   "Apropos across Quicklisp libraries."
